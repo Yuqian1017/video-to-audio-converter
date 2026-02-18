@@ -100,13 +100,19 @@ def convert_url():
             '-f', 'bestaudio/best',
             '-o', input_path,
             '--no-playlist',
+            '--no-check-certificates',
+            '--user-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            '--extractor-args', 'bilibili:quality=bestaudio',
+            '-x',  # Extract audio directly
             url
         ]
 
         result = subprocess.run(download_cmd, capture_output=True, text=True, timeout=300)
 
         if result.returncode != 0:
-            return jsonify({'error': 'Failed to download video. Make sure the URL is valid.'}), 400
+            error_msg = result.stderr[-500:] if result.stderr else 'Unknown error'
+            print(f"yt-dlp error: {error_msg}")
+            return jsonify({'error': f'下载失败: {error_msg[:200]}'}), 400
 
         # Find the downloaded file
         downloaded_file = None
